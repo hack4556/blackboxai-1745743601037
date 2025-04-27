@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Distributor Dashboard - LapWater</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-8">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center">Distributor Bulk Order</h1>
+    <form id="orderForm" class="space-y-6">
+      <div>
+        <label for="distributorId" class="block text-sm font-medium text-gray-700">Distributor ID</label>
+        <input type="text" id="distributorId" name="distributorId" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+      </div>
+      <div>
+        <label for="product" class="block text-sm font-medium text-gray-700">Product</label>
+        <input type="text" id="product" name="product" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+      </div>
+      <div>
+        <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+        <input type="number" id="quantity" name="quantity" min="1" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition">Place Order</button>
+    </form>
+    <p id="orderMessage" class="mt-4 text-center text-green-600 hidden"></p>
+  </div>
+
+  <script>
+    const orderForm = document.getElementById('orderForm');
+    const orderMessage = document.getElementById('orderMessage');
+
+    orderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      orderMessage.classList.add('hidden');
+      const formData = new FormData(orderForm);
+      const data = {
+        distributorId: formData.get('distributorId'),
+        product: formData.get('product'),
+        quantity: parseInt(formData.get('quantity'), 10)
+      };
+      try {
+        const response = await fetch('/api/distributor/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (response.ok) {
+          orderMessage.textContent = 'Order placed successfully! Order ID: ' + result.orderId;
+          orderMessage.classList.remove('hidden');
+          orderForm.reset();
+        } else {
+          orderMessage.textContent = result.message || 'Failed to place order';
+          orderMessage.classList.remove('hidden');
+          orderMessage.classList.remove('text-green-600');
+          orderMessage.classList.add('text-red-600');
+        }
+      } catch (error) {
+        orderMessage.textContent = 'An error occurred. Please try again.';
+        orderMessage.classList.remove('hidden');
+        orderMessage.classList.remove('text-green-600');
+        orderMessage.classList.add('text-red-600');
+      }
+    });
+  </script>
+</body>
+</html>
